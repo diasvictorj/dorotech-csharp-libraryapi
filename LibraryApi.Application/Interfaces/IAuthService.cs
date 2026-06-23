@@ -1,0 +1,8 @@
+using LibraryApi.Application.DTOs;
+
+namespace LibraryApi.Application.Interfaces;
+
+public interface IAuthService
+{
+    Task<AuthResponseDto?> LoginAsync(LoginDto dto);
+}

@@ -2,6 +2,7 @@ using LibraryApi.Application.DTOs;
 using LibraryApi.Application.Exceptions;
 using LibraryApi.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LibraryApi.API.Controllers;
 
@@ -36,6 +37,7 @@ public class BooksController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<BookDto>> Create(CreateBookDto dto)
     {
         try
@@ -48,8 +50,10 @@ public class BooksController : ControllerBase
             return Conflict(new { message = ex.Message });
         }
     }
+    
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, UpdateBookDto dto)
     {
         try
@@ -69,6 +73,7 @@ public class BooksController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _bookService.DeleteAsync(id);
