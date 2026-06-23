@@ -9,31 +9,45 @@ namespace LibraryApi.Application.Services;
 public class BookService : IBookService
 {
     private readonly IBookRepository _bookRepository;
+    private readonly IAuthorRepository _authorRepository;
 
-    public BookService(IBookRepository bookRepository)
+    public BookService(IBookRepository bookRepository, IAuthorRepository authorRepository)
     {
         _bookRepository = bookRepository;
+        _authorRepository = authorRepository;
     }
 
-    public async Task<IEnumerable<BookDto>> GetAllAsync()
+    public async Task<PagedResultDto<BookDto>> GetAllAsync(BookQueryDto query)
     {
-        var books = await _bookRepository.GetAllAsync();
-        return books.Select(MapToDto);
-    }
+        if (query.Page < 1) query.Page = 1;
+        if (query.PageSize < 1 || query.PageSize > 50) query.PageSize = 10;
 
-    public async Task<BookDto?> GetByIdAsync(int id)
-    {
-        var book = await _bookRepository.GetByIdAsync(id);
-        return book is null ? null : MapToDto(book);
+        var (books, totalCount) = await _bookRepository.GetAllAsync(
+         query.Title,
+         query.AuthorName,
+         query.PublicationYear,
+         query.Page,
+         query.PageSize);
+
+        return new PagedResultDto<BookDto>
+        {
+            Data = books.Select(MapToDto),
+            Page = query.Page,
+            PageSize = query.PageSize,
+            TotalCount = totalCount
+        };
     }
 
     public async Task<BookDto> CreateAsync(CreateBookDto dto)
     {
         var existing = await _bookRepository.GetByIsbnAsync(dto.Isbn);
         if (existing is not null)
-        {
             throw new BusinessException($"Já existe um livro cadastrado com o ISBN '{dto.Isbn}'.");
-        }
+
+        // Correção do bug: valida se o autor existe
+        var author = await _authorRepository.GetByIdAsync(dto.AuthorId);
+        if (author is null)
+            throw new BusinessException($"Autor com id {dto.AuthorId} não encontrado.");
 
         var book = new Book
         {
@@ -50,6 +64,13 @@ public class BookService : IBookService
         return MapToDto(created!);
     }
 
+
+
+    public async Task<BookDto?> GetByIdAsync(int id)
+    {
+        var book = await _bookRepository.GetByIdAsync(id);
+        return book is null ? null : MapToDto(book);
+    }
     public async Task<bool> UpdateAsync(int id, UpdateBookDto dto)
     {
         var book = await _bookRepository.GetByIdAsync(id);
