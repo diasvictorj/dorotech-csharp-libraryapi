@@ -48,5 +48,20 @@ public class AuthController : ControllerBase
         var result = await _authService.RegisterAsync(dto);
         return CreatedAtAction(nameof(Login), result);
     }
+
+    /// <summary>
+    /// Renova o JWT usando um Refresh Token válido.
+    /// </summary>
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AuthResponseDto>> Refresh(RefreshTokenDto dto)
+    {
+        var result = await _authService.RefreshAsync(dto);
+        if (result is null)
+            return Unauthorized(new { message = "Refresh token inválido ou expirado." });
+
+        return Ok(result);
+    }
 }
 

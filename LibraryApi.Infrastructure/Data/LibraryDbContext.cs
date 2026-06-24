@@ -8,7 +8,7 @@ public class LibraryDbContext : DbContext
     public LibraryDbContext(DbContextOptions<LibraryDbContext> options) : base(options)
     {
     }
-
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Book> Books { get; set; }
     public DbSet<Author> Authors { get; set; }
     public DbSet<User> Users { get; set; }
@@ -24,5 +24,10 @@ public class LibraryDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Username)
             .IsUnique();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(rt => rt.UserId);
     }
 }
