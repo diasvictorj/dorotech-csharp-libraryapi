@@ -3,6 +3,8 @@ using LibraryApi.Application.Exceptions;
 using LibraryApi.Application.Interfaces;
 using LibraryApi.Domain.Entities;
 using LibraryApi.Domain.Interfaces;
+using LibraryApi.Application.Helpers;
+using LibraryApi.Application.Validators;
 
 namespace LibraryApi.Application.Services;
 
@@ -48,7 +50,23 @@ public class BookService : IBookService
 
     public async Task<BookDto> CreateAsync(CreateBookDto dto)
     {
-        var existing = await _bookRepository.GetByIsbnAsync(dto.Isbn);
+        // Gera ISBN se solicitado
+        if (dto.GenerateIsbn)
+        {
+            dto.Isbn = IsbnGenerator.GenerateIsbn13();
+        }
+        else
+        {
+            // Valida manualmente se não foi gerado
+            if (string.IsNullOrWhiteSpace(dto.Isbn))
+                throw new ValidationException("O ISBN é obrigatório quando GenerateIsbn é false.");
+
+            var isbnValidation = new IsbnAttribute();
+            if (!isbnValidation.IsValid(dto.Isbn))
+                throw new ValidationException("ISBN inválido. Informe um ISBN-10 ou ISBN-13 válido.");
+        }
+
+        var existing = await _bookRepository.GetByIsbnAsync(dto.Isbn!);
         if (existing is not null)
             throw new BusinessException($"Já existe um livro cadastrado com o ISBN '{dto.Isbn}'.");
 
@@ -59,7 +77,7 @@ public class BookService : IBookService
         var book = new Book
         {
             Title = dto.Title,
-            Isbn = dto.Isbn,
+            Isbn = dto.Isbn!,
             PublicationYear = dto.PublicationYear,
             AuthorId = dto.AuthorId
         };
@@ -70,7 +88,6 @@ public class BookService : IBookService
         var created = await _bookRepository.GetByIdAsync(book.Id);
         return MapToDto(created!);
     }
-
     public async Task<bool> UpdateAsync(int id, UpdateBookDto dto)
     {
         var book = await _bookRepository.GetByIdAsync(id);

@@ -26,6 +26,11 @@ public class ErrorHandlingMiddleware
             _logger.LogWarning("Business rule violation: {Message}", ex.Message);
             await WriteErrorResponse(context, HttpStatusCode.Conflict, ex.Message);
         }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning("Validation error: {Message}", ex.Message);
+            await WriteErrorResponse(context, HttpStatusCode.BadRequest, ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error processing request {Method} {Path}",
@@ -43,4 +48,7 @@ public class ErrorHandlingMiddleware
         var response = new { message };
         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
+
+
+
 }

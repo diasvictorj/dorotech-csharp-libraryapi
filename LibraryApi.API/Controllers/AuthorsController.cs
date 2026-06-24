@@ -13,11 +13,14 @@ namespace LibraryApi.API.Controllers;
 public class AuthorsController : ControllerBase
 {
     private readonly IAuthorService _authorService;
+    private readonly IBookService _bookService;
 
-    public AuthorsController(IAuthorService authorService)
+    public AuthorsController(IAuthorService authorService, IBookService bookService )
     {
         _authorService = authorService;
+        _bookService = bookService;
     }
+
 
     /// <summary>
     /// Retorna todos os autores cadastrados com suporte a filtros e paginação.
@@ -93,5 +96,23 @@ public class AuthorsController : ControllerBase
             return NotFound(new { message = $"Autor com id {id} não encontrado." });
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Retorna todos os livros de um autor específico.
+    /// </summary>
+    /// <param name="id">Identificador do autor.</param>
+    [HttpGet("{id:int}/books")]
+    [ProducesResponseType(typeof(IEnumerable<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<BookDto>>> GetBooksByAuthor(int id)
+    {
+        var author = await _authorService.GetByIdAsync(id);
+        if (author is null)
+            return NotFound(new { message = $"Autor com id {id} não encontrado." });
+
+        var query = new BookQueryDto { AuthorName = author.Name, PageSize = 50 };
+        var books = await _bookService.GetAllAsync(query);
+        return Ok(books.Data);
     }
 }

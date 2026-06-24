@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LibraryApi.Application.Validators;
 
 namespace LibraryApi.Application.DTOs;
 
@@ -9,7 +10,7 @@ public class UpdateBookDto
     public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "O ISBN é obrigatório.")]
-    [MaxLength(20)]
+    [Isbn]
     public string Isbn { get; set; } = string.Empty;
 
     [Range(1000, 9999, ErrorMessage = "Ano de publicação inválido.")]

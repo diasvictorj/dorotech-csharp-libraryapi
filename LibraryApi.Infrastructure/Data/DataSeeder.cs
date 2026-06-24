@@ -31,14 +31,14 @@ public static class DataSeeder
             var guimaraesId = (await context.Authors.FirstAsync(a => a.Name == "Guimarães Rosa")).Id;
 
             var books = new List<Book>
-            {
-                new() { Title = "Dom Casmurro", Isbn = "978-85-254-1909-1", PublicationYear = 1899, AuthorId = machadoId },
-                new() { Title = "Memórias Póstumas de Brás Cubas", Isbn = "978-85-254-1910-7", PublicationYear = 1881, AuthorId = machadoId },
-                new() { Title = "A Hora da Estrela", Isbn = "978-85-359-0108-9", PublicationYear = 1977, AuthorId = clariceId },
-                new() { Title = "Perto do Coração Selvagem", Isbn = "978-85-359-0107-2", PublicationYear = 1943, AuthorId = clariceId },
-                new() { Title = "Gabriela, Cravo e Canela", Isbn = "978-85-254-1911-4", PublicationYear = 1958, AuthorId = jorgeId },
-                new() { Title = "Grande Sertão: Veredas", Isbn = "978-85-254-1912-1", PublicationYear = 1956, AuthorId = guimaraesId }
-            };
+{
+    new() { Title = "Dom Casmurro", Isbn = "9788535914849", PublicationYear = 1899, AuthorId = machadoId },
+    new() { Title = "Memórias Póstumas de Brás Cubas", Isbn = "9788535910663", PublicationYear = 1881, AuthorId = machadoId },
+    new() { Title = "A Hora da Estrela", Isbn = "9788532511010", PublicationYear = 1977, AuthorId = clariceId },
+    new() { Title = "Perto do Coração Selvagem", Isbn = "9788532630148", PublicationYear = 1943, AuthorId = clariceId },
+    new() { Title = "Gabriela, Cravo e Canela", Isbn = "9788528612776", PublicationYear = 1958, AuthorId = jorgeId },
+    new() { Title = "Grande Sertão: Veredas", Isbn = "9788535908110", PublicationYear = 1956, AuthorId = guimaraesId }
+};
             await context.Books.AddRangeAsync(books);
             await context.SaveChangesAsync();
         }
