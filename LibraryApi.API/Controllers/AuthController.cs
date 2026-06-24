@@ -1,6 +1,7 @@
 using LibraryApi.Application.DTOs;
 using LibraryApi.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using LibraryApi.Domain.Enums;
 
 namespace LibraryApi.API.Controllers;
 
@@ -26,4 +27,26 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+
+
+
+    /// <summary>
+    /// Registra um novo usuário.
+    /// Criar usuários Admin requer autenticação de Administrador.
+    /// Usuários Públicos podem ser criados sem autenticação.
+    /// </summary>
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
+    {
+        // Apenas Admin pode criar outro Admin
+        if (dto.Role == UserRole.Admin && !User.IsInRole("Admin"))
+            return Forbid();
+
+        var result = await _authService.RegisterAsync(dto);
+        return CreatedAtAction(nameof(Login), result);
+    }
 }
+

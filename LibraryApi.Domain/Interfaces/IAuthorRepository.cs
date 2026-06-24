@@ -4,8 +4,14 @@ namespace LibraryApi.Domain.Interfaces;
 
 public interface IAuthorRepository
 {
-    Task<IEnumerable<Author>> GetAllAsync();
+    Task<(IEnumerable<Author> Authors, int TotalCount)> GetAllAsync(
+        string? name,
+        int page,
+        int pageSize);
     Task<Author?> GetByIdAsync(int id);
+    Task<Author?> GetByNameAsync(string name);
     Task AddAsync(Author author);
+    void Update(Author author);
+    void Delete(Author author);
     Task<bool> SaveChangesAsync();
 }

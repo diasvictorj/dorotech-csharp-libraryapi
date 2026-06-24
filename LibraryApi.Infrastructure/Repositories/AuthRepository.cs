@@ -14,21 +14,55 @@ public class AuthorRepository : IAuthorRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Author>> GetAllAsync()
+    public async Task<(IEnumerable<Author> Authors, int TotalCount)> GetAllAsync(
+        string? name,
+        int page,
+        int pageSize)
     {
-        return await _context.Authors
+        var queryable = _context.Authors
+            .Include(a => a.Books)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(name))
+            queryable = queryable.Where(a => a.Name.Contains(name.Trim()));
+
+        var totalCount = await queryable.CountAsync();
+
+        var authors = await queryable
             .OrderBy(a => a.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (authors, totalCount);
     }
 
     public async Task<Author?> GetByIdAsync(int id)
     {
-        return await _context.Authors.FindAsync(id);
+        return await _context.Authors
+            .Include(a => a.Books)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task<Author?> GetByNameAsync(string name)
+    {
+        return await _context.Authors
+            .FirstOrDefaultAsync(a => a.Name.ToLower() == name.ToLower());
     }
 
     public async Task AddAsync(Author author)
     {
         await _context.Authors.AddAsync(author);
+    }
+
+    public void Update(Author author)
+    {
+        _context.Authors.Update(author);
+    }
+
+    public void Delete(Author author)
+    {
+        _context.Authors.Remove(author);
     }
 
     public async Task<bool> SaveChangesAsync()
