@@ -26,10 +26,10 @@ public class BookRepository : IBookRepository
         .AsQueryable();
 
     if (!string.IsNullOrWhiteSpace(title))
-        queryable = queryable.Where(b => b.Title.Contains(title));
+        queryable = queryable.Where(b => b.Title.Contains(title.Trim()));
 
     if (!string.IsNullOrWhiteSpace(authorName))
-        queryable = queryable.Where(b => b.Author.Name.Contains(authorName));
+        queryable = queryable.Where(b => b.Author.Name.Contains(authorName.Trim()));
 
     if (publicationYear.HasValue)
         queryable = queryable.Where(b => b.PublicationYear == publicationYear);
