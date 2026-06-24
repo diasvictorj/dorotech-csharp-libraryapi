@@ -21,9 +21,11 @@ public class AuthorService : IAuthorService
         if (query.PageSize < 1 || query.PageSize > 50) query.PageSize = 10;
 
         var (authors, totalCount) = await _authorRepository.GetAllAsync(
-            query.Name,
-            query.Page,
-            query.PageSize);
+    query.Name,
+    query.OrderBy,
+    query.OrderDirection,
+    query.Page,
+    query.PageSize);
 
         return new PagedResultDto<AuthorDto>
         {

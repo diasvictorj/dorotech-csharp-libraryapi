@@ -8,6 +8,8 @@ public interface IBookRepository
         string? title,
         string? authorName,
         int? publicationYear,
+        string? orderBy,
+        string? orderDirection,
         int page,
         int pageSize);
     Task<Book?> GetByIdAsync(int id);

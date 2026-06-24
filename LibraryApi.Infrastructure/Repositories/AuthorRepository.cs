@@ -16,6 +16,8 @@ public class AuthorRepository : IAuthorRepository
 
     public async Task<(IEnumerable<Author> Authors, int TotalCount)> GetAllAsync(
         string? name,
+        string? orderBy,
+        string? orderDirection,
         int page,
         int pageSize)
     {
@@ -28,8 +30,17 @@ public class AuthorRepository : IAuthorRepository
 
         var totalCount = await queryable.CountAsync();
 
+        var isDesc = orderDirection?.ToLower() == "desc";
+
+        queryable = orderBy?.ToLower() switch
+        {
+            "bookcount" => isDesc ? queryable.OrderByDescending(a => a.Books.Count)
+                                   : queryable.OrderBy(a => a.Books.Count),
+            _ => isDesc ? queryable.OrderByDescending(a => a.Name)
+                                   : queryable.OrderBy(a => a.Name)
+        };
+
         var authors = await queryable
-            .OrderBy(a => a.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

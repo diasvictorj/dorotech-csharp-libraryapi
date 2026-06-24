@@ -14,36 +14,51 @@ public class BookRepository : IBookRepository
         _context = context;
     }
 
-  public async Task<(IEnumerable<Book> Books, int TotalCount)> GetAllAsync(
-    string? title,
-    string? authorName,
-    int? publicationYear,
-    int page,
-    int pageSize)
-{
-    var queryable = _context.Books
-        .Include(b => b.Author)
-        .AsQueryable();
+    public async Task<(IEnumerable<Book> Books, int TotalCount)> GetAllAsync(
+       string? title,
+       string? authorName,
+       int? publicationYear,
+       string? orderBy,
+       string? orderDirection,
+       int page,
+       int pageSize)
+    {
+        var queryable = _context.Books
+            .Include(b => b.Author)
+            .AsQueryable();
 
-    if (!string.IsNullOrWhiteSpace(title))
-        queryable = queryable.Where(b => b.Title.Contains(title.Trim()));
+        if (!string.IsNullOrWhiteSpace(title))
+            queryable = queryable.Where(b => b.Title.Contains(title.Trim()));
 
-    if (!string.IsNullOrWhiteSpace(authorName))
-        queryable = queryable.Where(b => b.Author.Name.Contains(authorName.Trim()));
+        if (!string.IsNullOrWhiteSpace(authorName))
+            queryable = queryable.Where(b => b.Author.Name.Contains(authorName.Trim()));
 
-    if (publicationYear.HasValue)
-        queryable = queryable.Where(b => b.PublicationYear == publicationYear);
+        if (publicationYear.HasValue)
+            queryable = queryable.Where(b => b.PublicationYear == publicationYear);
 
-    var totalCount = await queryable.CountAsync();
+        var totalCount = await queryable.CountAsync();
 
-    var books = await queryable
-        .OrderBy(b => b.Title)
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync();
+        var isDesc = orderDirection?.ToLower() == "desc";
 
-    return (books, totalCount);
-}
+        queryable = orderBy?.ToLower() switch
+        {
+            "author" => isDesc ? queryable.OrderByDescending(b => b.Author.Name)
+                                        : queryable.OrderBy(b => b.Author.Name),
+            "publicationyear" => isDesc ? queryable.OrderByDescending(b => b.PublicationYear)
+                                        : queryable.OrderBy(b => b.PublicationYear),
+            "isbn" => isDesc ? queryable.OrderByDescending(b => b.Isbn)
+                                        : queryable.OrderBy(b => b.Isbn),
+            _ => isDesc ? queryable.OrderByDescending(b => b.Title)
+                                        : queryable.OrderBy(b => b.Title)
+        };
+
+        var books = await queryable
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (books, totalCount);
+    }
     public async Task<Book?> GetByIdAsync(int id)
     {
         return await _context.Books

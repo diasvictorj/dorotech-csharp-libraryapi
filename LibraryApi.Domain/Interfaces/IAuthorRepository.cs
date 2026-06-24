@@ -5,9 +5,11 @@ namespace LibraryApi.Domain.Interfaces;
 public interface IAuthorRepository
 {
     Task<(IEnumerable<Author> Authors, int TotalCount)> GetAllAsync(
-        string? name,
-        int page,
-        int pageSize);
+      string? name,
+      string? orderBy,
+      string? orderDirection,
+      int page,
+      int pageSize);
     Task<Author?> GetByIdAsync(int id);
     Task<Author?> GetByNameAsync(string name);
     Task AddAsync(Author author);
